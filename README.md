@@ -5,7 +5,7 @@ raw_user_forecasts.csv a dataset of user predictions for the 2022-23 season from
 
 ## Elo Info
 
-This system is based of the [elo system used by FiveThirtyEight](https://fivethirtyeight.com/methodology/how-our-nfl-predictions-work/). Elo is a score assigned to each team that represents their team-strength. It is derived from that team's performance in a closed pool of zero-sum games. 
+This project was inspired by the [elo system used by FiveThirtyEight](https://fivethirtyeight.com/methodology/how-our-nfl-predictions-work/). Elo is a score assigned to each team that represents their team-strength. It is derived from that team's performance in a closed pool of zero-sum games. 
 
 Using elo, you can calculate the odds of team A winning a given game as:
 
