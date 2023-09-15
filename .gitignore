@@ -1,6 +1,6 @@
 # Dev-assigned
 *exploration.ipynb
-data/*
+data/
 *.csv
 *.pkl
 
@@ -44,6 +44,7 @@ coverage.xml
 .mr.developer.cfg
 .project
 .pydevproject
+*.pyc
 
 # Rope
 .ropeproject
