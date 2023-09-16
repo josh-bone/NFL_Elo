@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 K = 20
 
-def initialize_elo(year, week=None):
+def initialize(year, week=None):
     """Loads the current elo for every team
 
     Args:
@@ -10,14 +10,16 @@ def initialize_elo(year, week=None):
         week (_type_, optional): Current week. Defaults to None. If None, we assume this is week 1.
     """       
     
-    dic = {}
+    elo, ortg, drtg = {}, {}, {}
     
     if year is None:
         fname = './data/Elo_2022.csv'
         print(f"Reading {fname}")
         df = pd.read_csv(fname)
         for ind, row in df.iterrows():
-            dic[row['Team']] = 1600
+            elo[row['Team']] = 1600
+            ortg[row['Team']] = 800
+            drtg[row['Team']] = 800
     else:
         if week is None or week==1:
             fname = f'./data/Elo_{year - 1}.csv'
@@ -28,9 +30,21 @@ def initialize_elo(year, week=None):
         df = pd.read_csv(fname)
         
         for ind, row in df.iterrows():
-            dic[row['Team']] = row['Elo']
+            elo[row['Team']] = row['Elo']
+            
+            if 'ORTG' in row:
+                ortg[row['Team']] = row['ORTG']
+            else:
+                # assume off & def are equal
+                ortg[row['Team']] = elo[row['Team']] / 2
+                
+            if 'DRTG' in row:
+                drtg[row['Team']] = row['DRTG']
+            else:
+                # assume off & def are equal
+                drtg[row['Team']] = elo[row['Team']] / 2
         
-    return(dic)
+    return(elo, ortg, drtg)
 
 def prob_to_odds(prob):
     """Converts from decimal probability (e.g. 0.75) to American betting odds (e.g. -300)
@@ -96,6 +110,46 @@ def mov_mult(elo_A, elo_B, points_A, points_B):
     
     return( np.log(point_diff + 1)*(2.2 / (elo_diff * .001 + 2.2)) )
 
+def pred_total(ortgA, drtgA, ortgB, drtgB):
+    o = ortgA + ortgB
+    d = drtgA + drtgB
+    
+    normfac = 25  # let's try 25 because elodiff/25 gives the spread prediction
+    
+    return(42 + (o - d)/normfac)
+
+def offdef_shift(home_score, away_score, 
+                 home_ortg, away_ortg, 
+                 home_drtg, away_drtg, 
+                 avg_score = 42.246744598993786):
+    
+    # First compute the elo shift
+    elo_home = home_ortg + home_drtg
+    elo_away = away_ortg + away_drtg
+    shift = get_shift(elo_home, elo_away, home_score, away_score) 
+    
+    # Now compute o factor
+    total_score = home_score + away_score
+    o_factor = total_score / (2 * avg_score)  # will be exactly 1/2 for an average game
+    
+    # clip at 1 in case it's a huge scoring game
+    if o_factor > 1: o_factor = 1
+    
+    # Distribute elo to off & def
+    o_shift = shift * o_factor
+    d_shift = shift * (1 - o_factor)
+    
+    return(o_shift, d_shift)
+
+def get_shift(elo_A, elo_B, points_A, points_B):
+    prob = prob_winning(elo_A, elo_B)
+    mult = mov_mult(elo_A, elo_B, points_A, points_B)  # Margin-of-victory multiplier
+    result = game_res(points_A, points_B)
+    shift = (K * mult) * (result - prob)
+    
+    return shift
+
+
 def update(elo_A, elo_B, points_A, points_B):
     """This function computes the new Elo for two teams
 
@@ -108,9 +162,6 @@ def update(elo_A, elo_B, points_A, points_B):
     # assert type(points_A) == int and type(points_B) == int, f"Score needs to be integer! Instead points_A is {type(points_A)} and points_B is {type(points_B)}"
     # assert type(elo_A) in [float, int] and type(elo_B) in [float, int], f"Elo needs to be a number! Instead elo_A is {type(elo_A)} and elo_B is {type(elo_B)}"
 
-    prob = prob_winning(elo_A, elo_B)
-    mult = mov_mult(elo_A, elo_B, points_A, points_B)  # Margin-of-victory multiplier
-    result = game_res(points_A, points_B)
-    shift = (K * mult) * (result - prob)
+    shift = get_shift(elo_A, elo_B, points_A, points_B)
     
     return(elo_A + shift, elo_B - shift)

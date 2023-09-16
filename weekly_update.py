@@ -7,7 +7,8 @@ import time
 import pandas as pd
 import os
 
-from elo import update, initialize_elo
+from elo import update, initialize, offdef_shift
+from util import validate_ratings
 
 YEAR = 2023
 
@@ -74,7 +75,12 @@ def update_elos(wk):
     """    
     
     # First, we'll load the Elo ratings from LAST week
-    elos = initialize_elo(YEAR, week=wk)
+    elos, ortgs, drtgs = initialize(YEAR, week=wk)
+    validate_ratings(elos, ortgs, drtgs)
+    
+    print(f"Elo:\n{elos}")
+    print(f"ORTGS:\n{ortgs}")
+    print(f"DRTGS:\n{drtgs}")
     
     game_results = pd.read_csv(f'./data/{YEAR}wk{wk}_result.csv')
     
@@ -84,23 +90,37 @@ def update_elos(wk):
         home, away = row['Home Team'], row['Away Team']
         home_old = elos[home]
         away_old = elos[away]
+        ortgA, ortgB = ortgs[home], ortgs[away]
+        drtgA, drtgB = drtgs[home], drtgs[away]
         points_home, points_away = row['Home Score'], row["Away Score"]
         
         print(f"{away} ({away_old}) @ {home} ({home_old}) \t-\t {points_away}-{points_home}...")
         
         home_new, away_new = update(home_old, away_old, points_home, points_away)
         
-        print(f"{home} Elo changed from {home_old:.0f} to {home_new:.0f}")
-        print(f"{away} Elo changed from {away_old:.0f} to {away_new:.0f}")
+        # update
+        o_shift, d_shift = offdef_shift(points_home, points_away,
+                                        ortgA, ortgB,
+                                        drtgA, drtgB)
+        
+        ortgs[home] = ortgA + o_shift
+        ortgs[away] = ortgB - o_shift
+        drtgs[home] = drtgA + d_shift
+        drtgs[away] = drtgB - d_shift
+        
         
         home_entry = pd.DataFrame.from_dict(
-            {"Team": [row['Home Team']],
-             "Elo" : [home_new]}
+            {"Team": [home],
+             "Elo" : [home_new],
+             "ORTG" : [ortgs[home]],
+             "DRTG" : [drtgs[home]]}
             )
         
         away_entry = pd.DataFrame.from_dict(
-            {"Team": [row['Away Team']],
-             "Elo" : [away_new]}
+            {"Team": [away],
+             "Elo" : [away_new],
+             "ORTG" : [ortgs[away]],
+             "DRTG" : [drtgs[away]]}
             )
         
         savedf = pd.concat([savedf, home_entry], ignore_index=True, verify_integrity=True)
@@ -111,6 +131,14 @@ def update_elos(wk):
     savedf.to_csv(savename)
 
 if __name__ == '__main__':
+    valid = {"y":True, "yes":True, "n":False, "no":False}
+    
+    # Begin user input
     WEEK = int(input("What week is it (1-18)? "))
-    record_scores(WEEK)
+    
+    yn = input(f"Do you need to input the scores for week {WEEK}? [y/n] \t").casefold()
+    assert yn in valid, "Did not recognize input"
+    if valid[yn]:
+        record_scores(WEEK)
+        
     update_elos(WEEK)

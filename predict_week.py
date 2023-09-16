@@ -4,15 +4,14 @@ TODO:
     - Deliver predicted margin of victory
 """
 
-import os
 import argparse
-import pickle as pkl
-
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)  # For pd concat warning
 
 import pandas as pd
-from elo import prob_winning, initialize_elo, prob_to_odds
+from elo import prob_winning, initialize, prob_to_odds, pred_total
+from util import load_pkl, save_pkl, validate_ratings 
+
 
 parser = argparse.ArgumentParser(
                     prog='Predict Week',
@@ -20,24 +19,6 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-w', '--week', type=int)
 parser.add_argument('-y', '--year', type=int)
 
-
-def load_pkl(fname):
-    """Loads a dictionary from a .pkl file. 
-    Returns this dictionary, if the file exists, or an empty one if not.
-
-    Args:
-        fname (str): name of the .pkl file, including full path if it is not in the CWD.
-    """    
-    if not os.path.exists(fname):
-        dic = {}  # We are going to save nicknames here to make CLI-input easier 
-    else:
-        with open(fname, 'rb') as f:
-            dic = pkl.load(f)
-    return(dic)
-
-def save_pkl(obj, fname):
-    with open(fname, 'wb') as f:
-        pkl.dump(obj, f)
 
 def query_schedule(wk, YEAR = 2023):
     """
@@ -47,7 +28,8 @@ def query_schedule(wk, YEAR = 2023):
     savename = f"./data/{YEAR}wk{wk}_predictions.csv"
     
     # First, we'll load the Elo ratings from LAST week
-    elos = initialize_elo(YEAR, week=wk)
+    elos, ortgs, drtgs = initialize(YEAR, week=wk)
+    validate_ratings(elos, ortgs, drtgs)
     
     """
     The 'alias' variable is a dictionary that contains nicknames/aliases as keys and true team names as values. 
@@ -122,19 +104,19 @@ def query_schedule(wk, YEAR = 2023):
         You can divide EloDiff by 25 in order to get the spread.
         """
         spread = (away_elo - home_elo) / 25  # negative if home team is favored
-        
-        print(f"Predicting the result of {away} ({away_elo:.0f}) @ {home} ({home_elo:.0f})...")
-        
+                
         prob_home_win = prob_winning(home_elo, away_elo)
         prob_away_win = 1 - prob_home_win
         
         home_odds = prob_to_odds(prob_home_win)
         away_odds = prob_to_odds(prob_away_win)
         
+        total = pred_total(ortgs[home], drtgs[home], ortgs[away], drtgs[away])
+        
         if prob_home_win > prob_away_win:
-            print(f"{home} are favored by {abs(spread):.1f} pts ({home_odds}), with a {prob_home_win*100:.2f}% chance of winning\n")
+            print(f"{home} are favored by {abs(spread):.1f} pts ({home_odds})\nExpected point total:\t{total}")
         elif prob_away_win > prob_home_win:
-            print(f"{away} are favored by {abs(spread):.1f} pts ({away_odds}), with a {prob_away_win*100:.2f}% chance of winning\n")
+            print(f"{away} are favored by {abs(spread):.1f} pts ({away_odds})\nExpected point total:\t{total}")
         else:
             print(f"Wow! This is a perfectly even matchup!")
             
@@ -144,7 +126,8 @@ def query_schedule(wk, YEAR = 2023):
                 'Away Team' : [away],
                 'Home Elo'  : [home_elo],
                 'Away Elo'  : [away_elo],
-                'Spread'    : [spread],
+                'Predicted Point Spread'    : [spread],
+                'Predicted Total'           : [total],
                 'Home Odds' : [home_odds],
                 'Away Odds' : [away_odds],
                 'Home Prob' : [prob_home_win],
