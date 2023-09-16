@@ -6,21 +6,29 @@ def initialize_elo(year, week=None):
     """Loads the current elo for every team
 
     Args:
-        year (int): year of the season start
+        year (int): year of the season start. If None, all elo will be initialized to 1600.
         week (_type_, optional): Current week. Defaults to None. If None, we assume this is week 1.
     """       
     
-    if week is None or week==1:
-        fname = f'./data/Elo_{year - 1}.csv'
-    else:
-        fname = f'./data/Elo_{year}_week{week - 1}.csv'
-        
-    print(f"Reading {fname}")
-    df = pd.read_csv(fname)
-    
     dic = {}
-    for ind, row in df.iterrows():
-        dic[row['Team']] = row['Elo']
+    
+    if year is None:
+        fname = './data/Elo_2022.csv'
+        print(f"Reading {fname}")
+        df = pd.read_csv(fname)
+        for ind, row in df.iterrows():
+            dic[row['Team']] = 1600
+    else:
+        if week is None or week==1:
+            fname = f'./data/Elo_{year - 1}.csv'
+        else:
+            fname = f'./data/Elo_{year}_week{week - 1}.csv'
+            
+        print(f"Reading {fname}")
+        df = pd.read_csv(fname)
+        
+        for ind, row in df.iterrows():
+            dic[row['Team']] = row['Elo']
         
     return(dic)
 
@@ -97,8 +105,8 @@ def update(elo_A, elo_B, points_A, points_B):
         points_A (_type_): Points scored by team A
         points_B (_type_): Points scored by team B
     """    
-    assert type(points_A) == int and type(points_B) == int, f"Score needs to be integer! Instead points_A is {type(points_A)} and points_B is {type(points_B)}"
-    assert type(elo_A) in [float, int] and type(elo_B) in [float, int], f"Elo needs to be a number! Instead elo_A is {type(elo_A)} and elo_B is {type(elo_B)}"
+    # assert type(points_A) == int and type(points_B) == int, f"Score needs to be integer! Instead points_A is {type(points_A)} and points_B is {type(points_B)}"
+    # assert type(elo_A) in [float, int] and type(elo_B) in [float, int], f"Elo needs to be a number! Instead elo_A is {type(elo_A)} and elo_B is {type(elo_B)}"
 
     prob = prob_winning(elo_A, elo_B)
     mult = mov_mult(elo_A, elo_B, points_A, points_B)  # Margin-of-victory multiplier
