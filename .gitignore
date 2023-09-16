@@ -1,8 +1,8 @@
 # Dev-assigned
-*exploration.ipynb
 data/
 *.csv
 *.pkl
+*.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
