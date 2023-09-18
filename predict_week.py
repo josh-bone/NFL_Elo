@@ -41,21 +41,10 @@ def query_schedule(wk, YEAR = 2023):
     # We'll want to index by team-name, whether we're using an alias or the true name. 
     for team in elos:
         alias[team] = team
-        
-    """TODO: allow for piece-by-piece input"""
-    # # savedf will hold the prediction results - so we can save it to a .csv later
-    # if os.path.exists(savename):
-    #     # Sometimes we've already input some of the games, but need to add one more (On Mon. night, for example)
-    #     savedf = pd.read_csv(savename, index_col=0)
-    # else:
-    #     savedf = pd.DataFrame(
-    #         columns=['Home Team','Away Team','Home Prob','Away Prob','Home Odds','Away Odds']
-    #     )
     
     savedf = pd.DataFrame(
             columns=['Home Team','Away Team','Home Prob','Away Prob','Home Odds','Away Odds']
         )
-    
     
     # Take inputs
     while True:
