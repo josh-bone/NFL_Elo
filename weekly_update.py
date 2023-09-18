@@ -6,11 +6,17 @@ Run it between Tuesday and Thursday during the season.
 import time
 import pandas as pd
 import os
+import argparse
 
 from elo import update, initialize, offdef_shift
 from util import validate_ratings, yes_or_no
 
-YEAR = 2023
+
+parser = argparse.ArgumentParser(
+                    prog='Predict Week',
+                    description='This script accepts a schedule as CLI-input, and predicts the outcome for the upcoming games.')
+parser.add_argument('-w', '--week', type=int)
+parser.add_argument('-y', '--year', type=int, default=2023)
 
 def record_scores(wk):
     """_summary_
@@ -133,8 +139,14 @@ def update_elos(wk):
 
 if __name__ == '__main__':
     
-    # Begin user input
-    WEEK = int(input("Which week just finished (1-18)? "))
+    args = parser.parse_args()
+    
+    YEAR = args.year
+    
+    if args.week is None:
+        WEEK = int(input("Which week just finished (1-18)? "))
+    else:
+        WEEK = args.week
     
     if yes_or_no(f"Do you need to input the scores for week {WEEK}?"):
         record_scores(WEEK)

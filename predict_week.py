@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(
                     prog='Predict Week',
                     description='This script accepts a schedule as CLI-input, and predicts the outcome for the upcoming games.')
 parser.add_argument('-w', '--week', type=int)
-parser.add_argument('-y', '--year', type=int)
+parser.add_argument('-y', '--year', type=int, default=2023)
 
 
 def query_schedule(wk, YEAR = 2023):
@@ -143,5 +143,6 @@ if __name__ == '__main__':
         WEEK = int(input("What week are you making picks for (1-18)?\t"))
     else:
         WEEK = args.week
+        
     query_schedule(WEEK)
     
