@@ -134,7 +134,7 @@ if __name__ == '__main__':
     valid = {"y":True, "yes":True, "n":False, "no":False}
     
     # Begin user input
-    WEEK = int(input("What week is it (1-18)? "))
+    WEEK = int(input("Which week just finished (1-18)? "))
     
     yn = input(f"Do you need to input the scores for week {WEEK}? [y/n] \t").casefold()
     assert yn in valid, "Did not recognize input"

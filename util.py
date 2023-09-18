@@ -1,9 +1,10 @@
 import pickle as pkl
 import os
+import math
 
 def validate_ratings(elo, ortg, drtg):
     for team in elo:
-        assert elo[team] == ortg[team] + drtg[team], "There is a mismatch between elo and off/def ratings! Check the data."
+        assert math.isclose(elo[team], ortg[team] + drtg[team], rel_tol=1e-4), f"There is a mismatch between elo and off/def ratings for {team}!\n({ortg[team]:.1f} + {drtg[team]:.1f}!={elo[team]:.1f})."
 
 def load_pkl(fname):
     """Loads a dictionary from a .pkl file. 
