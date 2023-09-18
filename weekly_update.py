@@ -8,7 +8,7 @@ import pandas as pd
 import os
 
 from elo import update, initialize, offdef_shift
-from util import validate_ratings
+from util import validate_ratings, yes_or_no
 
 YEAR = 2023
 
@@ -129,16 +129,14 @@ def update_elos(wk):
     savename = f'./data/Elo_{YEAR}_week{wk}.csv'
     print(f"Saving to {savename}")
     savedf.to_csv(savename)
+    
 
 if __name__ == '__main__':
-    valid = {"y":True, "yes":True, "n":False, "no":False}
     
     # Begin user input
     WEEK = int(input("Which week just finished (1-18)? "))
     
-    yn = input(f"Do you need to input the scores for week {WEEK}? [y/n] \t").casefold()
-    assert yn in valid, "Did not recognize input"
-    if valid[yn]:
+    if yes_or_no(f"Do you need to input the scores for week {WEEK}?"):
         record_scores(WEEK)
         
     update_elos(WEEK)

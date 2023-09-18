@@ -10,7 +10,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)  # For pd concat 
 
 import pandas as pd
 from elo import prob_winning, initialize, prob_to_odds, pred_total
-from util import load_pkl, save_pkl, validate_ratings 
+from util import load_pkl, save_pkl, validate_ratings, yes_or_no
 
 
 parser = argparse.ArgumentParser(
@@ -41,9 +41,7 @@ def query_schedule(wk, YEAR = 2023):
     # We'll want to index by team-name, whether we're using an alias or the true name. 
     for team in elos:
         alias[team] = team
-    
-    valid = {"y":True, "yes":True, "n":False, "no":False}
-    
+        
     """TODO: allow for piece-by-piece input"""
     # # savedf will hold the prediction results - so we can save it to a .csv later
     # if os.path.exists(savename):
@@ -69,8 +67,7 @@ def query_schedule(wk, YEAR = 2023):
         # TODO: Change away to alias[away] 
         elif away not in elos:
             print(f"I didn't recognize the team {away}...")
-            yn = input(f"Would you like to save {away} as an alias for an NFL team? [y/n] ").casefold()
-            if valid[yn]:
+            if yes_or_no(f"Would you like to save {away} as an alias for an NFL team?"):
                 true_team = input(f"For which team is {away} an alias? ").capitalize()
                 assert true_team in elos
                 alias[away] = true_team.capitalize()
@@ -86,8 +83,7 @@ def query_schedule(wk, YEAR = 2023):
         # TODO: Change home to alias[home] 
         elif home not in elos:
             print(f"I didn't recognize the team {home}...")
-            yn = input(f"Would you like to save {home} as an alias for an NFL team? [y/n] ").casefold()
-            if valid[yn]:
+            if yes_or_no(f"Would you like to save {home} as an alias for an NFL team?"):
                 true_team = input(f"For which team is {home} an alias? ").capitalize()
                 assert true_team in elos
                 alias[home] = true_team.capitalize()
@@ -144,7 +140,7 @@ def query_schedule(wk, YEAR = 2023):
 if __name__ == '__main__':
     args = parser.parse_args()
     if args.week is None:
-        WEEK = int(input("What week are you making picks for (1-18)? "))
+        WEEK = int(input("What week are you making picks for (1-18)?\t"))
     else:
         WEEK = args.week
     query_schedule(WEEK)

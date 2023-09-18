@@ -2,6 +2,25 @@ import pickle as pkl
 import os
 import math
 
+def yes_or_no(prompt):
+    """Helper function for accepting command line input (CLI).
+
+    Args:
+        prompt (str): The string to be displayed to the user.
+
+    Returns:
+        _type_: _description_
+    """    
+    valid = {"y":True, "yes":True, "n":False, "no":False}
+    
+    if "y/n" not in prompt:
+        prompt += " [y/n]\t"
+    
+    yn = input(prompt).casefold()
+    assert yn in valid, "Did not recognize input"
+    
+    return valid[yn]
+
 def validate_ratings(elo, ortg, drtg):
     for team in elo:
         assert math.isclose(elo[team], ortg[team] + drtg[team], rel_tol=1e-4), f"There is a mismatch between elo and off/def ratings for {team}!\n({ortg[team]:.1f} + {drtg[team]:.1f}!={elo[team]:.1f})."
