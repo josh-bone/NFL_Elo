@@ -10,7 +10,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)  # For pd concat 
 
 import pandas as pd
 from elo import prob_winning, initialize, prob_to_odds, pred_total
-from util import load_pkl, save_pkl, validate_ratings, yes_or_no
+from util import load_pkl, save_pkl, validate_ratings, query_team
 
 
 parser = argparse.ArgumentParser(
@@ -49,37 +49,11 @@ def query_schedule(wk, YEAR = 2023):
     # Take inputs
     while True:
         
-        away = input("\nAway Team: ").capitalize()
-        if away.lower() == 'q': break
-        elif away in alias:
-            away = alias[away]
-        # TODO: Change away to alias[away] 
-        elif away not in elos:
-            print(f"I didn't recognize the team {away}...")
-            if yes_or_no(f"Would you like to save {away} as an alias for an NFL team?"):
-                true_team = input(f"For which team is {away} an alias? ").capitalize()
-                assert true_team in elos
-                alias[away] = true_team.capitalize()
-            else:
-                assert False, "Re-input is not yet implemented"
-        else: assert False, "Unexpected error. Please reach out to the developer."
-        away = alias[away]
+        away = query_team("\nAway Team: ")
+        if not away: break
         
-        home = input("\nHome Team: ").capitalize()
-        if home.casefold() == 'q': break
-        elif home in alias:
-            home = alias[home]
-        # TODO: Change home to alias[home] 
-        elif home not in elos:
-            print(f"I didn't recognize the team {home}...")
-            if yes_or_no(f"Would you like to save {home} as an alias for an NFL team?"):
-                true_team = input(f"For which team is {home} an alias? ").capitalize()
-                assert true_team in elos
-                alias[home] = true_team.capitalize()
-            else:
-                assert False, "Re-input is not yet implemented"
-        else: assert False, "Unexpected error. Please reach out to the developer."
-        home = alias[home]
+        home = query_team("\nHome Team: ")
+        if not home: break
         
         home_elo = elos[home]
         away_elo = elos[away]
@@ -123,7 +97,6 @@ def query_schedule(wk, YEAR = 2023):
         savedf = pd.concat([savedf, entry], ignore_index=True, verify_integrity=True)
         
     savedf.to_csv(savename, index = False)
-    save_pkl(alias, alias_filename)
         
 
 if __name__ == '__main__':

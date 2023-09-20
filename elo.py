@@ -93,9 +93,9 @@ def game_res(A, B):
         return 0.5
 
 def mov_mult(elo_A, elo_B, points_A, points_B):
-    """Margin-of-victory multiplier
+    """Margin-of-victory multiplier. It's OK to interchange A and B here.
     
-    It's OK to interchange A and B here
+    TODO: decrease this if the game went into overtime!
 
     Args:
         elo_A (_type_): Pre-game elo of team A

@@ -2,6 +2,41 @@ import pickle as pkl
 import os
 import math
 
+def query_team(prompt, alias_filename='alias.pkl'):
+    """queries the user to input a VALID NFL team name
+
+    Args:
+        prompt (str): str to, output to the CLI in order to prompt user input
+        alias (dict): (nickname, teamname) key-value pairs
+
+    Returns:
+        teamname (str): The capitalized and corrected name of the NFL team (e.g. Patriots)
+    """    
+    
+    """
+    The 'alias' variable is a dictionary that contains nicknames/aliases as keys and true team names as values. 
+    All strings, and all uppercase.
+    """
+    alias = load_pkl(alias_filename)
+    
+    teamname = input(prompt).capitalize()
+    if teamname.lower() == 'q': return False
+
+    while teamname not in alias.keys():
+        print(f"I didn't recognize the team {teamname}...")
+        if yes_or_no(f"Would you like to save {teamname} as an alias for an NFL team?"):
+            true_team = input(f"For which team is {teamname} an alias? ").capitalize()
+            
+            if true_team in alias.values():  # If we recognize 'true_team'
+                alias[teamname] = true_team.capitalize()  # save 'teamname' as an alias for 'true_team'
+            
+    teamname = alias[teamname]
+    
+    # In case we made changes (added nicknames/aliases), save this dictionary to file
+    save_pkl(alias, alias_filename)
+    
+    return teamname
+
 def yes_or_no(prompt):
     """Helper function for accepting command line input (CLI).
 

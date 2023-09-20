@@ -9,7 +9,7 @@ import os
 import argparse
 
 from elo import update, initialize, offdef_shift
-from util import validate_ratings, yes_or_no, load_pkl
+from util import validate_ratings, yes_or_no, load_pkl, query_team
 
 
 parser = argparse.ArgumentParser(
@@ -34,13 +34,6 @@ def record_scores(wk):
         savedf = pd.DataFrame(
             columns=['Home Team','Away Team','Home Score','Away Score']
             )
-        
-    """
-    The 'alias' variable is a dictionary that contains nicknames/aliases as keys and true team names as values. 
-    All strings, and all uppercase.
-    """
-    alias_filename = 'alias.pkl'
-    alias = load_pkl(alias_filename)
     
     print(f"Ready to update scores for {YEAR} week {wk}... \n(Input 'q' to exit)\n")
     
@@ -49,19 +42,15 @@ def record_scores(wk):
     while True:  # We will 'break' on a 'q' input
         
         # Take inputs
-        away = input("Away Team: ").capitalize()
-        if away.lower() == 'q': break
-        elif away in alias:
-            away = alias[away]
+        away = query_team("Away Team: ")
+        if not away: break
         
         awayscore = input("Away Score: ")
         if awayscore.lower() == 'q': break
         awayscore = int(awayscore)
         
-        home = input("Home Team: ").capitalize()
-        if home.lower() == 'q': break
-        elif home in alias:
-            home = alias[home]
+        home = query_team("Home Team: ")
+        if not home: break
         
         homescore = input("Home Score: ")
         if homescore.lower() == 'q': break
