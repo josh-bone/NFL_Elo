@@ -21,6 +21,10 @@ def query_team(prompt, alias_filename='alias.pkl'):
     
     teamname = input(prompt).capitalize()
     if teamname.lower() == 'q': return False
+    
+    while teamname.isnumeric():
+        print(f"It seems like you accidentally entered a score...")
+        teamname = input(prompt).capitalize()
 
     while teamname not in alias.keys():
         print(f"I didn't recognize the team {teamname}...")

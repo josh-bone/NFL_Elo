@@ -72,10 +72,6 @@ def record_scores(wk):
     
 def update_elos(wk):
     """
-    TODO: This still adds a row even if we already have updated that teams elo 
-    
-    _summary_
-
     Args:
         wk (_type_): _description_
     """    
