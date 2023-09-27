@@ -15,7 +15,7 @@ from util import validate_ratings, yes_or_no, load_pkl, query_team
 parser = argparse.ArgumentParser(
                     prog='Predict Week',
                     description='This script accepts a schedule as CLI-input, and predicts the outcome for the upcoming games.')
-parser.add_argument('-w', '--week', type=int)
+parser.add_argument('-w', '--week')
 parser.add_argument('-y', '--year', type=int, default=2023)
 
 def record_scores(wk):
@@ -72,6 +72,11 @@ def record_scores(wk):
     
 def update_elos(wk):
     """
+    TODO: 
+        I think this function should start at week 0 and move all the way to current week.
+        This way, if I update some code (e.g. change the ORTG/DRTG strategy), everything will use that same updated strategy.
+        Currently, I'd have to run this 4 separate times to get updated week 4 ratings.
+        
     Args:
         wk (_type_): _description_
     """    
@@ -130,7 +135,7 @@ def update_elos(wk):
         
     savename = f'./data/Elo_{YEAR}_week{wk}.csv'
     print(f"Saving to {savename}")
-    savedf.to_csv(savename)
+    savedf.to_csv(savename, index=False)
     
 
 if __name__ == '__main__':
@@ -140,11 +145,19 @@ if __name__ == '__main__':
     YEAR = args.year
     
     if args.week is None:
-        WEEK = int(input("Which week just finished (1-18)? "))
+        week = input("Which week just finished (1-18)? ")
     else:
-        WEEK = args.week
-    
-    if yes_or_no(f"Do you need to input the scores for week {WEEK}?"):
-        record_scores(WEEK)
+        week = args.week
         
-    update_elos(WEEK)
+    # Check if 'week' is actually a range of weeks
+    if '-' in week:
+            start, end = [int(i) for i in week.split('-')]
+            weeks = list(range(start, end))
+    else:
+        assert week.isnumeric(), f"Invalid input: '{week}'"
+        weeks = [int(week)]
+    
+    for WEEK in weeks:
+        if yes_or_no(f"Do you need to input the scores for week {WEEK}?"):
+            record_scores(WEEK)
+        update_elos(WEEK)
