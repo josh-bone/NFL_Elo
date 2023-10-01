@@ -8,6 +8,39 @@ import requests
 from util import iso_to_dt, load_pkl
 
 
+def query_scores(WEEKNUM, YEAR=2023):
+    """Generates scoreboard for a given week of NFL games
+
+    Args:
+        WEEKNUM (int): week [1-18?] (must be finished)
+        YEAR (int, optional): _description_. Defaults to 2023.
+    """    
+    SEASONTYPE = 2  # seasontypes: 1=pre, 2=regular, 3=post, 4=off
+    URL = f'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates={YEAR}&seasontype={SEASONTYPE}&week={WEEKNUM}'
+    r = requests.get(url=URL)
+    resp = r.json()
+    
+    games = []
+    for game in resp['events']:
+        home, away = None, None
+        for competitor in game['competitions'][0]['competitors']:
+            tm = competitor['team']['name']
+            score = int(competitor['score'])
+            if competitor['homeAway'] == 'home':
+                home = tm
+                homescore = score
+            elif competitor['homeAway'] == 'away':
+                away = tm
+                awayscore = score
+        assert home is not None and away is not None, "Incomplete game"
+        games.append({"Home" : home,
+                      "Home Score" : homescore, 
+                      "Away" : away,
+                      "Away Score" : awayscore})
+        
+    return(games)
+        
+
 def query_week(alias_filename = 'alias.pkl'):
     """
     TODO: See why there's only weather info for *some* games - maybe it has to be same-day?
