@@ -1,6 +1,11 @@
 import pickle as pkl
 import os
 import math
+import datetime as dt
+
+
+def iso_to_dt(date_str):
+    return(dt.datetime.fromisoformat(date_str))
 
 def query_team(prompt, alias_filename='alias.pkl'):
     """queries the user to input a VALID NFL team name

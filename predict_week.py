@@ -10,7 +10,8 @@ warnings.simplefilter(action='ignore', category=FutureWarning)  # For pd concat 
 
 import pandas as pd
 from elo import prob_winning, initialize, prob_to_odds, pred_total
-from util import load_pkl, save_pkl, validate_ratings, query_team
+from util import load_pkl, save_pkl, validate_ratings, query_team, yes_or_no
+from api import query_week
 
 
 parser = argparse.ArgumentParser(
@@ -20,7 +21,7 @@ parser.add_argument('-w', '--week', type=int)
 parser.add_argument('-y', '--year', type=int, default=2023)
 
 
-def query_schedule(wk, YEAR = 2023):
+def query_schedule(wk, YEAR=2023, user_input=True):
     """
     Asks the user for games to predict one by one
     """    
@@ -46,15 +47,31 @@ def query_schedule(wk, YEAR = 2023):
             columns=['Home Team','Away Team','Home Prob','Away Prob','Home Odds','Away Odds']
         )
     
-    # Take inputs
-    while True:
-        
-        away = query_team("\nAway Team: ")
-        if not away: break
-        
-        home = query_team("\nHome Team: ")
-        if not home: break
-        
+    # Get schedule 
+    if not user_input:
+        query = query_week()
+        if not (int(meta['week']) == wk and int(meta['season']) == YEAR) or query is None:
+            # Got the wrong week from our API request
+            print(f"API request failed...\nWe will need you to input the games manually.")
+            user_input = True
+        else:
+            meta, games = query
+    # This is not an "else" clause because we change 'user_input' to True if the API request fails
+    if user_input:
+        games = []
+        while True:
+            """TODO: Separate the user input from calculations"""
+            away = query_team("\nAway Team: ")
+            if not away: break
+            
+            home = query_team("\nHome Team: ")
+            if not home: break
+            
+            games.append({'Away' : away, 'Home' : home})
+    
+    # Iterate schedule
+    for game in games:
+        away, home = game['Away'], game['Home']
         home_elo = elos[home]
         away_elo = elos[away]
         
@@ -106,5 +123,7 @@ if __name__ == '__main__':
     else:
         WEEK = args.week
         
-    query_schedule(WEEK)
+    api_call = yes_or_no("Query games from the internet?")
+        
+    query_schedule(WEEK, user_input=not api_call)
     

@@ -110,13 +110,13 @@ def mov_mult(elo_A, elo_B, points_A, points_B):
     
     return( np.log(point_diff + 1)*(2.2 / (elo_diff * .001 + 2.2)) )
 
-def pred_total(ortgA, drtgA, ortgB, drtgB):
+def pred_total(ortgA, drtgA, ortgB, drtgB, avg_score = 42.246744598993786):
     o = ortgA + ortgB
     d = drtgA + drtgB
     
     normfac = 25  # let's try 25 because elodiff/25 gives the spread prediction
     
-    return(42 + (o - d)/normfac)
+    return(avg_score + (o - d)/normfac)
 
 def offdef_shift(home_score, away_score, 
                  home_ortg, away_ortg, 
