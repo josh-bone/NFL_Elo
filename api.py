@@ -19,7 +19,7 @@ def query_scores(WEEKNUM, YEAR=2023):
     URL = f'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates={YEAR}&seasontype={SEASONTYPE}&week={WEEKNUM}'
     r = requests.get(url=URL)
     resp = r.json()
-    
+
     games = []
     for game in resp['events']:
         home, away = None, None
@@ -34,9 +34,9 @@ def query_scores(WEEKNUM, YEAR=2023):
                 awayscore = score
         assert home is not None and away is not None, "Incomplete game"
         games.append({"Home" : home,
-                      "Home Score" : homescore, 
-                      "Away" : away,
-                      "Away Score" : awayscore})
+                        "Home Score" : homescore, 
+                        "Away" : away,
+                        "Away Score" : awayscore})
         
     return(games)
         
@@ -49,23 +49,24 @@ def query_week(alias_filename = 'alias.pkl'):
         - one for each of the upcoming games in the current week
     """    
     meta, links = query_game_links()
-    
+
     alias = load_pkl(alias_filename)
-    
+
     games = []
     for link in links:
         r = requests.get(url=link)
         resp = r.json()
+        
+        away, home = [alias[abbrev.strip().capitalize()] for abbrev in resp['shortName'].upper().replace('VS', '@').split('@')]
+        
+        """Note: 'weather' is a dictionary.
+        Important keys: 'displayValue', 'windSpeed', 'temperature', 'lastUpdated', etc. """
         
         # if 'weather' not in resp:
         #     print(f"DIDN'T FIND 'WEATHER' IN RESPONSE!")
         #     pp = pprint.PrettyPrinter(indent=4)
         #     pp.pprint(resp)
         
-        away, home = [alias[abbrev.strip().capitalize()] for abbrev in resp['shortName'].upper().replace('VS', '@').split('@')]
-        
-        """Note: 'weather' is a dictionary.
-        Important keys: 'displayValue', 'windSpeed', 'temperature', 'lastUpdated', etc. """
         # weather = resp['weather']  
         
         # weather_time = iso_to_dt(weather['lastUpdated'])  # this is important bc we want to know if this weather report is near game-time

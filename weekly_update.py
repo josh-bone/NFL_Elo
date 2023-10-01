@@ -159,5 +159,6 @@ if __name__ == '__main__':
     
     for WEEK in weeks:
         if yes_or_no(f"Do you need to input the scores for week {WEEK}?"):
+            # TODO: utilize query_scores func. in api.py
             record_scores(WEEK)
         update_elos(WEEK)
