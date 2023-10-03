@@ -10,6 +10,7 @@ import argparse
 
 from elo import update, initialize, offdef_shift
 from util import validate_ratings, yes_or_no, load_pkl, query_team
+from api import query_scores
 
 
 parser = argparse.ArgumentParser(
@@ -18,7 +19,37 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-w', '--week')
 parser.add_argument('-y', '--year', type=int, default=2023)
 
-def record_scores(wk):
+def input_scores():
+    """Asks the user to input the results from each game
+    Returns a pandas dataframe containing all results
+    """    
+    while True:  # We will 'break' on a 'q' input
+        # Take inputs
+        away = query_team("Away Team: ")
+        if not away: break
+        
+        awayscore = input("Away Score: ")
+        if awayscore.lower() == 'q': break
+        awayscore = int(awayscore)
+        
+        home = query_team("Home Team: ")
+        if not home: break
+        
+        homescore = input("Home Score: ")
+        if homescore.lower() == 'q': break
+        homescore = int(homescore)
+    
+    # Format data
+    entry = pd.DataFrame.from_dict(
+        {'Home Team' : [home], 
+            'Away Team' : [away],
+            'Home Score': [homescore],
+            'Away Score': [awayscore]})
+    
+    savedf = pd.concat([savedf, entry], ignore_index=True, verify_integrity=True)
+    return(savedf)
+
+def record_scores(wk, user_input=True):
     """_summary_
 
     Args:
@@ -39,34 +70,15 @@ def record_scores(wk):
     
     # Now to begin recording all the games...
     home = 'NaN'
-    while True:  # We will 'break' on a 'q' input
+    
+    if not user_input:
+        query = query_scores(wk, YEAR=YEAR)
+        savedf = pd.DataFrame.from_records(query)
+    else:
+        savedf = input_scores()
         
-        # Take inputs
-        away = query_team("Away Team: ")
-        if not away: break
-        
-        awayscore = input("Away Score: ")
-        if awayscore.lower() == 'q': break
-        awayscore = int(awayscore)
-        
-        home = query_team("Home Team: ")
-        if not home: break
-        
-        homescore = input("Home Score: ")
-        if homescore.lower() == 'q': break
-        homescore = int(homescore)
-        
-        # Format data
-        entry = pd.DataFrame.from_dict(
-            {'Home Team' : [home], 
-                'Away Team' : [away],
-                'Home Score': [homescore],
-                'Away Score': [awayscore]})
-        
-        savedf = pd.concat([savedf, entry], ignore_index=True, verify_integrity=True)
-        print(savedf)
-        print('\n')
-        
+    print(savedf)
+    print('\n')
     savedf.to_csv(savename, index = False)
     
     
@@ -158,7 +170,8 @@ if __name__ == '__main__':
         weeks = [int(week)]
     
     for WEEK in weeks:
-        if yes_or_no(f"Do you need to input the scores for week {WEEK}?"):
+        if yes_or_no(f"Do you need to record the scores for week {WEEK}?"):
             # TODO: utilize query_scores func. in api.py
-            record_scores(WEEK)
-        update_elos(WEEK)
+            auto = yes_or_no("Would you like to use the API to update the scores automatically?")
+            record_scores(WEEK, user_input=not auto)
+        update_elos(WEEK) 

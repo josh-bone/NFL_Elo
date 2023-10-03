@@ -4,7 +4,6 @@ List of API links:
 """
 
 import requests
-# import pprint
 from util import iso_to_dt, load_pkl
 
 
@@ -33,10 +32,10 @@ def query_scores(WEEKNUM, YEAR=2023):
                 away = tm
                 awayscore = score
         assert home is not None and away is not None, "Incomplete game"
-        games.append({"Home" : home,
+        games.append({"Home Team" : home,
                         "Home Score" : homescore, 
-                        "Away" : away,
-                        "Away Score" : awayscore})
+                        "Away Team" : away,
+                        "Away Score" : awayscore})  # These keys should match the keys in weekly_update.input_scores()
         
     return(games)
         
