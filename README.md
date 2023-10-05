@@ -3,6 +3,16 @@ raw_user_forecasts.csv a dataset of user predictions for the 2022-23 season from
 "archive" is pulled from [this](https://www.kaggle.com/datasets/tobycrabtree/nfl-scores-and-betting-data) kaggle dataset. It contains historical betting info.
 
 
+## How to Use
+
+To *automatically* update ratings AND predict the next week's results, just run:
+
+```python run.py -a`
+
+To see a full list of the additional options you can use along with this script, do:
+
+```python run.py --help```
+
 ## Elo Info
 
 This project was inspired by the [elo system used by FiveThirtyEight](https://fivethirtyeight.com/methodology/how-our-nfl-predictions-work/). Elo is a score assigned to each team that represents their team-strength. It is derived from that team's performance in a closed pool of zero-sum games. 

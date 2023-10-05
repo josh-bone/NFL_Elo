@@ -21,15 +21,15 @@ parser.add_argument('-w', '--week', type=int)
 parser.add_argument('-y', '--year', type=int, default=2023)
 
 
-def query_schedule(wk, YEAR=2023, user_input=True):
+def query_schedule(wk, year=2023, user_input=True):
     """
     Asks the user for games to predict one by one
     """    
     
-    savename = f"./data/{YEAR}wk{wk}_predictions.csv"
+    savename = f"./data/{year}wk{wk}_predictions.csv"
     
     # First, we'll load the Elo ratings from LAST week
-    elos, ortgs, drtgs = initialize(YEAR, week=wk)
+    elos, ortgs, drtgs = initialize(year, week=wk)
     validate_ratings(elos, ortgs, drtgs)
     
     """
@@ -50,8 +50,7 @@ def query_schedule(wk, YEAR=2023, user_input=True):
     # Get schedule 
     if not user_input:
         query = query_week()
-        if not (int(meta['week']) == wk and int(meta['season']) == YEAR) or query is None:
-            # Got the wrong week from our API request
+        if query is None:  # TODO: also should check if week & year of response data match what was requested
             print(f"API request failed...\nWe will need you to input the games manually.")
             user_input = True
         else:
@@ -100,10 +99,10 @@ def query_schedule(wk, YEAR=2023, user_input=True):
             {
                 'Home Team' : [home],
                 'Away Team' : [away],
-                'Home Elo'  : [home_elo],
-                'Away Elo'  : [away_elo],
                 'Predicted Point Spread'    : [spread],
                 'Predicted Total'           : [total],
+                'Home Elo'  : [home_elo],
+                'Away Elo'  : [away_elo],
                 'Home Odds' : [home_odds],
                 'Away Odds' : [away_odds],
                 'Home Prob' : [prob_home_win],

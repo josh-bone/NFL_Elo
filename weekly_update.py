@@ -49,13 +49,13 @@ def input_scores():
     savedf = pd.concat([savedf, entry], ignore_index=True, verify_integrity=True)
     return(savedf)
 
-def record_scores(wk, user_input=True):
+def record_scores(wk, year=2023, user_input=False):
     """_summary_
 
     Args:
         wk (_type_): _description_
     """    
-    savename = f'./data/{YEAR}wk{wk}_result.csv'
+    savename = f'./data/{year}wk{wk}_result.csv'
     
     # savedf will hold the results of user input - so we can save it to a .csv later
     if os.path.exists(savename):
@@ -66,13 +66,13 @@ def record_scores(wk, user_input=True):
             columns=['Home Team','Away Team','Home Score','Away Score']
             )
     
-    print(f"Ready to update scores for {YEAR} week {wk}... \n(Input 'q' to exit)\n")
+    print(f"Ready to update scores for {year} week {wk}... \n(Input 'q' to exit)\n")
     
     # Now to begin recording all the games...
     home = 'NaN'
     
     if not user_input:
-        query = query_scores(wk, YEAR=YEAR)
+        query = query_scores(wk, YEAR=year)
         savedf = pd.DataFrame.from_records(query)
     else:
         savedf = input_scores()
@@ -82,7 +82,7 @@ def record_scores(wk, user_input=True):
     savedf.to_csv(savename, index = False)
     
     
-def update_elos(wk):
+def update_elos(wk, year=2023):
     """
     TODO: 
         I think this function should start at week 0 and move all the way to current week.
@@ -94,14 +94,14 @@ def update_elos(wk):
     """    
     
     # First, we'll load the Elo ratings from LAST week
-    elos, ortgs, drtgs = initialize(YEAR, week=wk)
+    elos, ortgs, drtgs = initialize(year, week=wk)
     validate_ratings(elos, ortgs, drtgs)
     
     print(f"Elo:\n{elos}")
     print(f"ORTGS:\n{ortgs}")
     print(f"DRTGS:\n{drtgs}")
     
-    game_results = pd.read_csv(f'./data/{YEAR}wk{wk}_result.csv')
+    game_results = pd.read_csv(f'./data/{year}wk{wk}_result.csv')
     
     savedf = pd.DataFrame( columns=["Team", "Elo"] )
     
@@ -145,7 +145,7 @@ def update_elos(wk):
         savedf = pd.concat([savedf, home_entry], ignore_index=True, verify_integrity=True)
         savedf = pd.concat([savedf, away_entry], ignore_index=True, verify_integrity=True)
         
-    savename = f'./data/Elo_{YEAR}_week{wk}.csv'
+    savename = f'./data/Elo_{year}_week{wk}.csv'
     print(f"Saving to {savename}")
     savedf.to_csv(savename, index=False)
     
