@@ -2,8 +2,9 @@ import numpy as np
 import pandas as pd
 K = 20
 
-def initialize(year, week=None):
-    """Loads the current elo for every team
+def initialize_ratings(year, week=None):
+    """
+    Loads the current elo for every team
 
     Args:
         year (int): year of the season start. If None, all elo will be initialized to 1600.
