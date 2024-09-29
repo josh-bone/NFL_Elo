@@ -9,7 +9,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)  # For pd concat warning
 
 import pandas as pd
-from elo import prob_winning, initialize, prob_to_odds, pred_total
+from elo import prob_winning, initialize_ratings, prob_to_odds, pred_total
 from util import load_pkl, save_pkl, validate_ratings, query_team, yes_or_no
 from api import query_week
 
@@ -18,18 +18,20 @@ parser = argparse.ArgumentParser(
                     prog='Predict Week',
                     description='This script accepts a schedule as CLI-input, and predicts the outcome for the upcoming games.')
 parser.add_argument('-w', '--week', type=int)
-parser.add_argument('-y', '--year', type=int, default=2023)
+parser.add_argument('-y', '--year', type=int, default=2024)
 
 
 def query_schedule(wk, year=2023, user_input=True):
     """
     Asks the user for games to predict one by one
+    
+    TODO: Get the schedule programmatically
     """    
     
-    savename = f"./data/{year}wk{wk}_predictions.csv"
+    savename = f"./data/{year}wk{wk}_predictions.csv"  # How does this work if someone installs through pip? 
     
     # First, we'll load the Elo ratings from LAST week
-    elos, ortgs, drtgs = initialize(year, week=wk)
+    elos, ortgs, drtgs = initialize_ratings(year, week=wk)
     validate_ratings(elos, ortgs, drtgs)
     
     """
@@ -49,6 +51,7 @@ def query_schedule(wk, year=2023, user_input=True):
     
     # Get schedule 
     if not user_input:
+        # TODO: Replace this with my scraper stuff
         query = query_week()
         if query is None:  # TODO: also should check if week & year of response data match what was requested
             print(f"API request failed...\nWe will need you to input the games manually.")
@@ -71,6 +74,7 @@ def query_schedule(wk, year=2023, user_input=True):
     # Iterate schedule
     for game in games:
         away, home = game['Away'], game['Home']
+        assert away in elos and home in elos, f"Either {home} or {away} was missing in the following ELO dictionary:\n{sorted(elos.keys())}"
         home_elo = elos[home]
         away_elo = elos[away]
         
