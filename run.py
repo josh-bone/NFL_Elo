@@ -5,8 +5,8 @@ from predict_week import query_schedule
 from util import yes_or_no
 
 parser = argparse.ArgumentParser(
-                    prog='Predict Week',
-                    description='This script accepts a schedule as CLI-input, and predicts the outcome for the upcoming games.')
+    prog='Predict Week',
+    description='This script accepts a schedule as CLI-input, and predicts the outcome for the upcoming games.')
 parser.add_argument('-w', '--week', type=int)
 parser.add_argument('-y', '--year', type=int, default=2023, help="The last *completed* week of games")
 parser.add_argument('-a', '--api', action='store_true', help="Call this if you want to use the API instead of command line input")

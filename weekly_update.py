@@ -8,7 +8,7 @@ import pandas as pd
 import os
 import argparse
 
-from elo import update, initialize, offdef_shift
+from elo import update, initialize_ratings, offdef_shift
 from util import validate_ratings, yes_or_no, load_pkl, query_team
 from api import query_scores
 
@@ -94,12 +94,8 @@ def update_elos(wk, year=2023):
     """    
     
     # First, we'll load the Elo ratings from LAST week
-    elos, ortgs, drtgs = initialize(year, week=wk)
+    elos, ortgs, drtgs = initialize_ratings(year, week=wk)
     validate_ratings(elos, ortgs, drtgs)
-    
-    print(f"Elo:\n{elos}")
-    print(f"ORTGS:\n{ortgs}")
-    print(f"DRTGS:\n{drtgs}")
     
     game_results = pd.read_csv(f'./data/{year}wk{wk}_result.csv')
     
@@ -145,6 +141,21 @@ def update_elos(wk, year=2023):
         savedf = pd.concat([savedf, home_entry], ignore_index=True, verify_integrity=True)
         savedf = pd.concat([savedf, away_entry], ignore_index=True, verify_integrity=True)
         
+    '''If a team was on a bye last week, we still need to include them in savedf!'''
+    print(f"Calling initialize_ratings(year=year, week=wk-1)")
+    former_elos, former_ortgs, former_drtgs = initialize_ratings(year=year, week=wk-1)
+    for tm in former_elos:    
+        if tm not in savedf["Team"]:
+            print(f"{tm} is on a bye week - copying their elo from last week")
+            bye_entry = pd.DataFrame.from_dict(
+            {"Team": [tm],
+             "Elo" : [former_elos[tm]],
+             "ORTG" : [former_ortgs[tm]],
+             "DRTG" : [former_drtgs[tm]]}
+            )
+            savedf = pd.concat([savedf, bye_entry], ignore_index=True, verify_integrity=True)
+    print()
+    
     savename = f'./data/Elo_{year}_week{wk}.csv'
     print(f"Saving to {savename}")
     savedf.to_csv(savename, index=False)
